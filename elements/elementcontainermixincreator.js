@@ -161,7 +161,7 @@ function createElementContainerMixin (execlib, blessedlib) {
   function addLink(be, name, l) {
     var ol;
     name = name || lib.uid();
-    ol = be.links.replace(name, l));
+    ol = be.links.replace(name, l);
     if (ol) {
       console.log('there was already a listener at ', name);
       ol.destroy();
@@ -170,13 +170,13 @@ function createElementContainerMixin (execlib, blessedlib) {
   function produceEvent2PropertyLink (eb, desc) {
     var pes = parsedEventString(eb, desc, '!', ':'), name;
     if (pes) {
-      addLink(be, desc.name, pes.s.attachListener(pes.sr, pes.t.set.bind(pes.t, pes.tr));
+      addLink(be, desc.name, pes.s.attachListener(pes.sr, pes.t.set.bind(pes.t, pes.tr)));
     }
   }
   function produceProperty2PropertyLink (eb, desc) {
     var pes = parsedEventString(eb, desc, ':', ':'), name;
     if (pes) {
-      addLink(be, desc.name, pes.s.attachListener(pes.sr, pes.t.set.bind(pes.t, pes.tr));
+      addLink(be, desc.name, pes.s.attachListener(pes.sr, pes.t.set.bind(pes.t, pes.tr)));
     }
   }
   function produceLink (eb, desc) {
