@@ -1,0 +1,20 @@
+{
+  "name": "allex_blessedlib",
+  "version": "1.0.0",
+  "description": "AllexJS `blessed` lib",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.hers.rs:allex_libs/blessed.git"
+  },
+  "keywords": [
+    "ecosystem:AllexJS",
+    "blessed",
+    "lib"
+  ],
+  "author": "HERS Belgrade",
+  "license": "ISC"
+}
