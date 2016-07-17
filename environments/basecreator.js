@@ -16,6 +16,10 @@ function createBlessedEnvironmentBase (execlib, blessedlib) {
     this.data = null;
     ChangeableListenable.prototype.destroy.call(this);
   };
+  DataSource.prototype.set_data = function (val) {
+    this.data = val;
+    return true;
+  }
 
   function menuProducer(be, pages) {
     var ret = {};
@@ -24,7 +28,7 @@ function createBlessedEnvironmentBase (execlib, blessedlib) {
   }
 
   function elementDecorator (result, desc) {
-    if (desc.menu === true) {
+    if (desc.menu) {
       result++;
       desc.type = 'container';
       desc.visible = false;
@@ -32,7 +36,17 @@ function createBlessedEnvironmentBase (execlib, blessedlib) {
     return result;
   }
 
+  function getOrCreator (map, name) {
+    var e = map.get(name);
+    if (!e) {
+      e = new DataSource();
+      map.add(name, e);
+    }
+    return e;
+  };
+
   function BlessedEnvironment (descriptor) {
+    this.environment = descriptor.environment;
     if (lib.isArray(descriptor.elements)) {
       if (descriptor.elements.reduce(elementDecorator, 0)) {
         descriptor.elements = descriptor.elements.concat( [{
@@ -51,10 +65,22 @@ function createBlessedEnvironmentBase (execlib, blessedlib) {
           type: 'box',
           name: 'area',
           blessedoptions: {
-            bottom:0,
+            bottom:1,
             left:0,
             right:0,
             top:1
+          }
+        },{
+          type: 'box',
+          name: 'statusbar',
+          blessedoptions: {
+            bottom: 0,
+            height: 1,
+            left: 0,
+            right: 0,
+            style: {
+              bg: '#000040'
+            }
           }
         }]);
       } else {
@@ -62,17 +88,30 @@ function createBlessedEnvironmentBase (execlib, blessedlib) {
           type: 'box',
           name: 'area',
           blessedoptions: {
-            bottom:0,
+            bottom:1,
             left:0,
             right:0,
             top:0
           }
+        },{
+          type: 'box',
+          name: 'statusbar',
+          blessedoptions: {
+            bottom: 0,
+            height: 1,
+            left: 0,
+            right: 0,
+            style: {
+              bg: '#000040'
+            }
+          }
         }]);
       }
     }
+    this.dataSources = new lib.Map();
+    this.dataSources.getElement = getOrCreator.bind(null, this.dataSources);
     ElementBase.call(this, descriptor);
     this.state = null;
-    this.dataSources = new lib.Map();
     this.commands = new lib.Map();
     this.activepage = null;
     this.environmentStateListener = descriptor.environment.attachListener('state', this.onEnvironmentState.bind(this, descriptor.environment));
@@ -88,12 +127,23 @@ function createBlessedEnvironmentBase (execlib, blessedlib) {
       this.commands.destroy();
     }
     this.commands = null;
+    this.state = null;
+    ElementBase.prototype.destroy.call(this);
     if (this.dataSources) {
+      this.dataSources.getElement = null;
       this.dataSources.destroy();
     }
     this.dataSources = null;
-    this.state = null;
-    ElementBase.prototype.destroy.call(this);
+    this.environment = null;
+  };
+  BlessedEnvironment.prototype.getElement = function (elementpath) {
+    if (elementpath === '^') {
+      return this.environment;
+    }
+    if (elementpath === 'dataSources') {
+      return this.dataSources;
+    }
+    return ElementBase.prototype.getElement.call(this, elementpath);
   };
   BlessedEnvironment.prototype.addPage = function (menuhash, descriptor) {
     if (!descriptor) {
@@ -105,7 +155,7 @@ function createBlessedEnvironmentBase (execlib, blessedlib) {
     if (!descriptor.name) {
       throw new lib.JSONizingError('NO_NAME_IN_PAGE_DESCRIPTOR', descriptor, 'No name');
     }
-    menuhash[descriptor.name] = {callback: this.activatePage.bind(this, descriptor.name)};
+    menuhash[descriptor.menu] = {callback: this.activatePage.bind(this, descriptor.name)};
   };
   BlessedEnvironment.prototype.activatePage = function (pagename) {
     var p = this.elements.get(pagename);
@@ -117,8 +167,6 @@ function createBlessedEnvironmentBase (execlib, blessedlib) {
       p.set('attached', this.elements.get('area'));
       p.set('visible', true);
       this.activepage = p;
-    } else{ 
-      this.elements.dumpToConsole();
     }
   };
   BlessedEnvironment.prototype.onEnvironmentState = function (environment, state) {
@@ -128,9 +176,12 @@ function createBlessedEnvironmentBase (execlib, blessedlib) {
     this.set('state', state);
   };
   BlessedEnvironment.prototype.addDataSource = function (envdatasource, name) {
-    var ds = new DataSource();
+    var ds = this.dataSources.get(name);
+    if (!ds) {
+      ds = new DataSource();
+      this.dataSources.add(name, ds);
+    }
     envdatasource.setTarget(ds);
-    this.dataSources.add(name, ds);
   };
   BlessedEnvironment.prototype.defaultElementCreationOptions = {
     type: 'box'

@@ -27,7 +27,7 @@ function createBlessedApp (execlib, blessedlib) {
       appdescriptor.register.forEach(registerElement);
     }
     ElementBase.call(this, appdescriptor);
-    console.log('new BlessedApp', this.elements.count);
+    console.log = console.error = this.blessed.log.bind(this.blessed);
     this.blessed.enableMouse();
     this.blessed.key(['escape', 'C-c'], this.destroy.bind(this));
     this.elements.get('remote').appendToBlessedNode(this.blessed);
@@ -44,7 +44,9 @@ function createBlessedApp (execlib, blessedlib) {
   BlessedApp.prototype.defaultElementCreationOptions = {
     type: 'screen',
     name: 'App',
+    dump: 'app.log',
     blessedoptions: {
+      log: 'blessedApp.log'
     }
   };
 

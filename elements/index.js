@@ -4,13 +4,16 @@ function createElements(execlib, blessedlib) {
   var blessed = blessedlib.blessed,
     ElementContainerMixin,
     ElementBase,
-    ElementContainer;
+    ElementContainer,
+    AllexTableElement;
 
   ElementContainerMixin = require('./elementcontainermixincreator')(execlib, blessedlib);
   ElementBase = require('./elementbasecreator')(execlib, ElementContainerMixin);
   ElementContainer = require('./elementcontainercreator')(execlib, ElementContainerMixin);
+  AllexTableElement = require('./allextablecreator')(execlib, ElementBase);
 
   blessedlib.elementRegistry.register('container', ElementContainer);
+  blessedlib.elementRegistry.register('allextable', AllexTableElement);
 
   return {
     ElementContainerMixin: ElementContainerMixin,

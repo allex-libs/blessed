@@ -1,4 +1,9 @@
 function createLib(execlib) {
+  return execlib.loadDependencies('client', ['allex:applinking:lib'], realCreator.bind(null, execlib));
+}
+
+
+function realCreator (execlib, applinkinglib) {
   var blessed = require('blessed'),
     lib = execlib.lib,
     ControllerBase = require('./controllerbasecreator')(execlib),
@@ -6,18 +11,18 @@ function createLib(execlib) {
     elementsSuite,
     ret;
 
-  /*
-   * Use elementRegistry to register classes having at least
-   * methods `hide`, `show`, `appendToBlessedNode`, `detach`
-   * and ctor accepting a descriptor
-   */
-
+  function isBlessedNode (thingy) {
+    return thingy && thingy instanceof blessed.Node;
+  }
 
   try {
   ret = {
     blessed: blessed,
+    isBlessedNode: isBlessedNode,
+    applinkinglib: applinkinglib,
     elementRegistry: new execlib.lib.DIContainer()
   };
+  require('./registrar')(execlib, ret);
   elementsSuite = require('./elements') (execlib, ret);
   lib.extend(ret, elementsSuite);
   App = require('./appcreator')(execlib, ret);
