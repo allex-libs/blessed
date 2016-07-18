@@ -9,9 +9,22 @@ function createAllexTable (execlib, ElementBase) {
     this.columnfilters = descriptor.columnfilters;
     this.header = null;
     this.maybeSetHeader();
+    this.data = null;
+    this.selected = new lib.HookCollection();
+    this.selector = this.onSelect.bind(this);
+    this.blessed.on('select', this.selector);
   }
   lib.inherit(BlessedAllexTable, ElementBase);
   BlessedAllexTable.prototype.destroy = function () {
+    if (this.selector) {
+      this.blessed.removeListener('select', this.selector);
+    }
+    this.selector = null;
+    if (this.selected) {
+      this.selected.destroy();
+    }
+    this.selected = null;
+    this.data = null;
     this.header = null;
     this.columnfilters = null;
     this.columns = null;
@@ -53,6 +66,10 @@ function createAllexTable (execlib, ElementBase) {
   }
   BlessedAllexTable.prototype.set_data = function (val) {
     var rows;
+    if (this.data === val) {
+      return false;
+    }
+    this.data = val;
     if (!lib.isArray(val)) {
       return;
     }
@@ -62,6 +79,18 @@ function createAllexTable (execlib, ElementBase) {
       rows.unshift(this.header);
     }
     this.blessed.setData(rows);
+  };
+  BlessedAllexTable.prototype.onSelect = function (blessed, rowindex) {
+    if (this.header) {
+      rowindex--;
+    }
+    if (rowindex<0) {
+      return;
+    }
+    if (rowindex>this.data.length-1) {
+      return;
+    }
+    this.selected.fire(this.data[rowindex]);
   };
 
   BlessedAllexTable.prototype.defaultElementCreationOptions = {
