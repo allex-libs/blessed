@@ -1,5 +1,5 @@
 function createLib(execlib) {
-  return execlib.loadDependencies('client', ['allex:applinking:lib'], realCreator.bind(null, execlib));
+  return execlib.loadDependencies('client', ['allex_applinkinglib'], realCreator.bind(null, execlib));
 }
 
 
